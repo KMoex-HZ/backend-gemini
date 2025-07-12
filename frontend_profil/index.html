@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Caelan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #e0f7fa; /* Warna latar belakang */
+            color: #333;
+        }
+        .profile-card {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 350px;
+        }
+        .profile-card h1 {
+            color: #007bff;
+            margin-bottom: 25px;
+        }
+        .profile-info p {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+        .profile-info strong {
+            color: #0056b3;
+        }
+        .loading {
+            font-style: italic;
+            color: #888;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .profile-item {
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            text-align: left; /* Biar tulisan di dalam item lebih rapi */
+        }
+        .profile-item:last-child {
+            margin-bottom: 0;
+        }
+        .profile-actions {
+            margin-top: 10px;
+            text-align: right; /* Tombol aksi di kanan */
+        }
+        .profile-actions button {
+            padding: 8px 12px;
+            margin-left: 8px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .edit-btn {
+            background-color: #007bff;
+            color: white;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+        /* Style untuk Modal Edit (Jendela Pop-up) */
+        .modal {
+            display: none; /* Sembunyikan secara default */
+            position: fixed; /* Tetap di layar */
+            z-index: 1; /* Di atas elemen lain */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Aktifkan scroll jika konten terlalu besar */
+            background-color: rgba(0,0,0,0.4); /* Background gelap transparan */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            width: 80%;
+            max-width: 500px;
+            text-align: left;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-content input[type="text"] {
+            width: calc(100% - 16px);
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .modal-content button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-card">
+        <h1>Profil Caelan Zhou</h1>
+        <div id="profiles-list" class="profile-info">
+            <p class="loading">Memuat data profil...</p>
+        </div>
+        <hr style="margin: 30px 0;"> <h2>Tambahkan Profil Baru</h2>
+        <form id="addProfileForm" style="text-align: left; max-width: 280px; margin: 0 auto;">
+            <label for="nama">Nama:</label><br>
+            <input type="text" id="nama" name="nama" required style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;"><br>
+
+            <label for="kampus">Kampus:</label><br>
+            <input type="text" id="kampus" name="kampus" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;"><br>
+
+            <label for="jurusan">Jurusan:</label><br>
+            <input type="text" id="jurusan" name="jurusan" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;"><br>
+
+            <label for="semester">Semester:</label><br>
+            <input type="text" id="semester" name="semester" style="width: 100%; padding: 8px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;"><br>
+
+            <button type="submit" style="width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">Tambahkan Profil</button>
+        </form>
+        <p id="message"></p> 
+
+    </div>
+     <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Edit Profil</h2>
+            <form id="editProfileForm">
+                <input type="hidden" id="edit-id" name="id"> <label for="edit-nama">Nama:</label><br>
+                <input type="text" id="edit-nama" name="nama" required><br>
+
+                <label for="edit-kampus">Kampus:</label><br>
+                <input type="text" id="edit-kampus" name="kampus"><br>
+
+                <label for="edit-jurusan">Jurusan:</label><br>
+                <input type="text" id="edit-jurusan" name="jurusan"><br>
+
+                <label for="edit-semester">Semester:</label><br>
+                <input type="text" id="edit-semester" name="semester"><br>
+
+                <button type="submit">Simpan Perubahan</button>
+            </form>
+            <p id="edit-message" style="margin-top: 15px;"></p>
+        </div>
+    </div>
+
+    <script>
+    // Deklarasi variabel akan dilakukan di dalam DOMContentLoaded untuk memastikan elemen sudah ada
+    const baseUrl = 'http://localhost:3000/profil'; // Ini boleh di luar DOMContentLoaded karena bukan elemen HTML
+
+    // Fungsi untuk menampilkan semua profil
+    async function fetchAllProfiles() {
+        // Pastikan profilesListDiv sudah ada dan diakses di sini
+        const profilesListDiv = document.getElementById('profiles-list');
+        if (!profilesListDiv) return; // Tambahkan cek pengaman
+
+        profilesListDiv.innerHTML = '<p class="loading">Memuat data profil...</p>';
+        try {
+            const response = await fetch(baseUrl);
+            if (!response.ok) {
+                throw new Error(`Gagal mengambil data dari backend: ${response.status}`);
+            }
+            const data = await response.json();
+
+            if (data.length === 0) {
+                profilesListDiv.innerHTML = '<p>Belum ada profil yang ditambahkan.</p>';
+                return;
+            }
+
+            profilesListDiv.innerHTML = data.map(profile => `
+                <div class="profile-item">
+                    <p><strong>ID:</strong> ${profile.id}</p>
+                    <p><strong>Nama:</strong> ${profile.nama}</p>
+                    <p><strong>Kampus:</strong> ${profile.kampus}</p>
+                    <p><strong>Jurusan:</strong> ${profile.jurusan}</p>
+                    <p><strong>Semester:</strong> ${profile.semester}</p>
+                    <div class="profile-actions">
+                        <button class="edit-btn" data-id="${profile.id}" data-nama="${profile.nama}" data-kampus="${profile.kampus}" data-jurusan="${profile.jurusan}" data-semester="${profile.semester}">Edit</button>
+                        <button class="delete-btn" data-id="${profile.id}">Hapus</button>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (error) {
+            console.error('Terjadi kesalahan:', error);
+            profilesListDiv.innerHTML = `<p class="error">Gagal memuat profil: ${error.message}</p>`;
+        }
+    }
+
+    // Fungsi untuk menambahkan profil baru (dari form)
+    async function addProfileData(event) {
+        event.preventDefault();
+        const addProfileForm = document.getElementById('addProfileForm');
+        const addMessageElement = document.getElementById('message');
+        if (!addProfileForm || !addMessageElement) return;
+
+        addMessageElement.textContent = '';
+
+        const newProfile = {
+            nama: addProfileForm.nama.value,
+            kampus: addProfileForm.kampus.value,
+            jurusan: addProfileForm.jurusan.value,
+            semester: addProfileForm.semester.value
+        };
+
+        try {
+            const response = await fetch(baseUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newProfile)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                addMessageElement.style.color = 'green';
+                addMessageElement.textContent = result.message + ' ID: ' + result.id;
+                addProfileForm.reset();
+                fetchAllProfiles();
+            } else {
+                addMessageElement.style.color = 'red';
+                addMessageElement.textContent = 'Gagal menambahkan profil: ' + result.message;
+            }
+
+        } catch (error) {
+            console.error('Terjadi kesalahan saat mengirim data:', error);
+            addMessageElement.style.color = 'red';
+            addMessageElement.textContent = 'Terjadi kesalahan jaringan atau server tidak merespons.';
+        }
+    }
+
+    // Fungsi untuk menampilkan modal edit dengan data yang dipilih
+    function showEditModal(profileData) {
+        const editProfileModal = document.getElementById('editProfileModal');
+        if (!editProfileModal) return;
+
+        document.getElementById('edit-id').value = profileData.id;
+        document.getElementById('edit-nama').value = profileData.nama;
+        document.getElementById('edit-kampus').value = profileData.kampus;
+        document.getElementById('edit-jurusan').value = profileData.jurusan;
+        document.getElementById('edit-semester').value = profileData.semester;
+
+        const editMessageElement = document.getElementById('edit-message');
+        if (editMessageElement) editMessageElement.textContent = '';
+
+        editProfileModal.style.display = 'flex';
+    }
+
+    // Fungsi untuk menyembunyikan modal edit
+    function hideEditModal() {
+        const editProfileModal = document.getElementById('editProfileModal');
+        if (editProfileModal) editProfileModal.style.display = 'none';
+    }
+
+    // Fungsi untuk mengirim update data profil
+    async function updateProfileData(event) {
+        event.preventDefault();
+        const editMessageElement = document.getElementById('edit-message');
+        if (!editMessageElement) return;
+        editMessageElement.textContent = '';
+
+        const profileId = document.getElementById('edit-id').value;
+        const updatedProfile = {
+            nama: document.getElementById('edit-nama').value,
+            kampus: document.getElementById('edit-kampus').value,
+            jurusan: document.getElementById('edit-jurusan').value,
+            semester: document.getElementById('edit-semester').value
+        };
+
+        try {
+            const response = await fetch(`${baseUrl}/${profileId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedProfile)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                editMessageElement.style.color = 'green';
+                editMessageElement.textContent = result.message;
+                hideEditModal();
+                fetchAllProfiles();
+            } else {
+                editMessageElement.style.color = 'red';
+                editMessageElement.textContent = 'Gagal memperbarui: ' + result.message;
+            }
+
+        } catch (error) {
+            console.error('Terjadi kesalahan saat update data:', error);
+            editMessageElement.style.color = 'red';
+            editMessageElement.textContent = 'Terjadi kesalahan jaringan atau server tidak merespons.';
+        }
+    }
+
+    // Fungsi untuk menghapus profil
+    async function deleteProfileData(profileId) {
+        if (!confirm('Apakah Anda yakin ingin menghapus profil ini?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${baseUrl}/${profileId}`, {
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(result.message);
+                fetchAllProfiles();
+            } else {
+                alert('Gagal menghapus profil: ' + result.message);
+            }
+
+        } catch (error) {
+            console.error('Terjadi kesalahan saat menghapus data:', error);
+            alert('Terjadi kesalahan jaringan atau server tidak merespons saat menghapus.');
+        }
+    }
+
+
+    // Ini adalah bagian penting: Menunggu semua HTML selesai dimuat
+    document.addEventListener('DOMContentLoaded', () => {
+        // Ambil referensi elemen di sini, setelah DOM dipastikan siap
+        const addProfileForm = document.getElementById('addProfileForm');
+        const editProfileForm = document.getElementById('editProfileForm');
+        const closeButton = document.querySelector('.close-button');
+        const profilesListDiv = document.getElementById('profiles-list');
+
+        // Tambahkan Event Listeners hanya jika elemen ditemukan
+        if (addProfileForm) {
+            addProfileForm.addEventListener('submit', addProfileData);
+        }
+        if (editProfileForm) {
+            editProfileForm.addEventListener('submit', updateProfileData);
+        }
+        if (closeButton) {
+            closeButton.addEventListener('click', hideEditModal);
+        }
+        if (profilesListDiv) {
+            profilesListDiv.addEventListener('click', (event) => {
+                if (event.target.classList.contains('edit-btn')) {
+                    const profileData = {
+                        id: event.target.dataset.id,
+                        nama: event.target.dataset.nama,
+                        kampus: event.target.dataset.kampus,
+                        jurusan: event.target.dataset.jurusan,
+                        semester: event.target.dataset.semester
+                    };
+                    showEditModal(profileData);
+                } else if (event.target.classList.contains('delete-btn')) {
+                    const profileId = event.target.dataset.id;
+                    deleteProfileData(profileId);
+                }
+            });
+        }
+
+        // Panggil fungsi untuk mengambil dan menampilkan semua profil saat halaman selesai dimuat
+        fetchAllProfiles();
+    });
+</script>
+</body>
+</html>

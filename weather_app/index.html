@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuaca Contoh</title>
+    <style>
+        /* Ini semua kode CSS untuk mengatur tampilan visualnya */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center; /* Menengahkan kartu cuaca secara horizontal */
+            align-items: center; /* Menengahkan kartu cuaca secara vertikal */
+            min-height: 100vh; /* Memastikan halaman penuh setinggi layar */
+            margin: 0; /* Menghilangkan margin bawaan browser */
+            background: linear-gradient(to right, #6dd5ed, #2193b0); /* Latar belakang biru gradasi */
+            color: #333; /* Warna teks standar */
+        }
+        .weather-container {
+            background-color: rgba(255, 255, 255, 0.95); /* Warna putih transparan */
+            padding: 35px;
+            border-radius: 15px; /* Sudut membulat */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* Efek bayangan */
+            text-align: center;
+            width: 320px; /* Lebar kartu */
+            transition: transform 0.3s ease; /* Efek transisi saat kursor di atasnya */
+        }
+        .weather-container:hover {
+            transform: translateY(-5px); /* Kartu sedikit naik saat di-hover */
+        }
+        .weather-container h2 {
+            margin-top: 0;
+            color: #0056b3; /* Warna judul */
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        .temperature {
+            font-size: 4.5em; /* Ukuran font suhu */
+            margin: 15px 0;
+            color: #e67e22; /* Warna suhu, oranye */
+            font-weight: bold;
+        }
+        .description {
+            font-size: 1.6em;
+            color: #555;
+            text-transform: capitalize; /* Huruf pertama kapital */
+            margin-bottom: 10px;
+        }
+        .location {
+            font-size: 1.3em;
+            color: #777;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="weather-container">
+        <h2>Informasi Cuaca</h2>
+        <div id="weather-info">
+            <p id="temperature" class="temperature"></p>
+            <p id="description" class="description"></p>
+            <p id="location" class="location"></p>
+            <p id="message" class="loading">Memuat data cuaca...</p>
+        </div>
+    </div>
+    <script>
+        // Ini adalah bagian JavaScript kita
+        // Fungsi untuk mengambil data cuaca dari OpenWeatherMap
+        async function getWeatherData() {
+            // PENTING: GANTI 'YOUR_API_KEY_HERE' dengan API Key-mu dari OpenWeatherMap!
+            const apiKey = '12369228b378ebb18e2ff640684eacf5'; 
+            const city = 'Bandar Lampung'; // Kita set kota default-nya ke Bandar Lampung
+
+            // Ini adalah alamat lengkap ke API OpenWeatherMap
+            // 'units=metric' biar suhu dalam Celsius
+            // 'lang=id' biar deskripsi cuaca dalam Bahasa Indonesia
+            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&APPID=${apiKey}&units=metric&lang=id`;
+
+            // Kita akan mencari elemen-elemen di HTML kita berdasarkan ID-nya
+            const tempElement = document.getElementById('temperature');
+            const descElement = document.getElementById('description');
+            const locElement = document.getElementById('location');
+            const msgElement = document.getElementById('message');
+
+            // Pertama-tama, tampilkan pesan loading
+            msgElement.textContent = 'Memuat data cuaca...';
+            msgElement.style.display = 'block'; // Pastikan pesan loading terlihat
+
+            // Hapus isi elemen-elemen sebelumnya (kalau ada)
+            tempElement.textContent = '';
+            descElement.textContent = '';
+            locElement.textContent = '';
+
+            try {
+                // Mencoba mengambil data dari API
+                const response = await fetch(apiUrl);
+
+                // Jika respons tidak berhasil (misal: API Key salah, kota tidak ditemukan)
+                if (!response.ok) {
+                    throw new Error(`Gagal mengambil data: ${response.status}. Mungkin API Key salah atau kota tidak ditemukan.`);
+                }
+
+                // Mengubah data yang diterima dari server menjadi format yang bisa kita pakai (JSON)
+                const data = await response.json();
+
+                // Sembunyikan pesan loading
+                msgElement.style.display = 'none';
+
+                // Tampilkan data cuaca yang sudah didapat ke elemen HTML kita
+                tempElement.textContent = `${Math.round(data.main.temp)}°C`;
+                descElement.textContent = data.weather[0].description;
+                locElement.textContent = `${data.name}, ${data.sys.country}`;
+
+            } catch (error) {
+                // Jika ada error saat mengambil data
+                console.error('Terjadi kesalahan:', error);
+                msgElement.textContent = `Gagal memuat cuaca: ${error.message}`;
+                msgElement.style.display = 'block'; // Tampilkan pesan error
+            }
+        }
+
+        // Panggil fungsi getWeatherData saat halaman web selesai dimuat
+        getWeatherData();
+    </script>
+</body>
+</html>
